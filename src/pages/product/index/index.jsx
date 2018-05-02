@@ -1,6 +1,7 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
 import PageTitle from 'component/page-title/index.jsx'
+import ListSearch from './index-list-search.jsx'
 import RcPagination from 'util/pagination/index.jsx'
 import TableList from 'util/table-list/index.jsx'
 
@@ -17,15 +18,24 @@ export default class ProductList extends React.Component{
     super(props)
     this.state = {
       list: [],
-      pageNum: 1
+      pageNum: 1,
+      listType: 'list'
     }
 
   }
   componentDidMount() {
     this.loadProductList();
   }
+  //加载商品列表
   loadProductList() {
-    _product.getProductList(this.state.pageNum).then(res => {
+    let listParam = {};
+    listParam.listType = this.state.listType;
+    listParam.pageNum = this.state.pageNum;
+    if(this.state.listType === 'search') {
+      listParam.searchType = this.state.searchType;
+      listParam.keyword = this.state.searchKeyword;
+    }
+    _product.getProductList(listParam).then(res => {
         this.setState(res)
     }, errMsg => {
       this.setState({
@@ -58,6 +68,17 @@ export default class ProductList extends React.Component{
         })
       }
   }
+  onSearch(searchType, searchKeyword) {
+    let listType = searchKeyword === '' ? 'list' : 'search';
+    this.setState({
+        listType      : listType,
+        pageNum       : 1,
+        searchType    : searchType,
+        searchKeyword : searchKeyword
+    }, () => {
+      this.loadProductList();
+    })
+  }
   render() {
     let tableHeads = [
       {name: '商品ID', width: '10%'},
@@ -69,7 +90,15 @@ export default class ProductList extends React.Component{
     ];
     return(
       <div id="page-wrapper">
-      <PageTitle title="商品列表"/>
+        <PageTitle title="商品列表">
+          <div className="page-header-right">
+            <Link to="/product/save" className="btn btn-primary">
+              <i className="fa fa-plus"></i>
+              <span>添加商品</span>
+            </Link>
+          </div>
+        </PageTitle>
+        <ListSearch onSearch={(searchType, searchKeyword) => this.onSearch(searchType, searchKeyword)}></ListSearch>
         <TableList tableHeads={tableHeads}>
           {
             this.state.list.map((product, index) => {
@@ -91,7 +120,6 @@ export default class ProductList extends React.Component{
                   <td>
                     <Link className="opear" to={`/product/detail/${product.id}`}>详情</Link>
                     <Link className="opear" to={`/product/save/${product.id}`}>编辑</Link>
-
                   </td>
                 </tr>
               )

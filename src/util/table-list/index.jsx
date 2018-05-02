@@ -34,7 +34,7 @@ export default class TableList extends React.Component{
     return(
       <div className="row">
         <div className="col-md-12">
-          <table className="table table-striped table-border">
+          <table className="table table-striped table-bordered">
               <thead>
                 <tr>
                   { tableHeader }
